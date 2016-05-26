@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 	private NfcAdapter mNfcAdapter;
 	private String[][] techListsArray;
 
-	private String MIME_TYPE = "text/plain";
+	private String MIME_TYPE = "application/spreekuur";
 	private String[] validSerials = {"04ACC0DA993D80"};
 	private String androidId;
 

@@ -55,7 +55,7 @@ public class DatabaseConnectionClass {
 	/*public String nextAvaliableTime(int lecturerID, int length)
 	{
 		String nextTime = "";
-		int TimeSpecified=0;
+		long TimeSpecified=0;
 		int Length =0;
 		int followingTime=0;
 		sql = "SELECT TimeSpecified, Length "
@@ -68,7 +68,7 @@ public class DatabaseConnectionClass {
 				TimeSpecified = rs.getInt("TimeSpecified");
 				Length = rs.getInt("Length");
 			}
-			if((TimeSpecified+Length) ==1230)
+			if((TimeSpecified+Length) ==1315)
 			{
 				followingTime = -1;
 			}
@@ -121,6 +121,20 @@ public class DatabaseConnectionClass {
 		}
 		return futureAppo;
 	}
+	
+	public void NFCTagAdd(String ID, String Room)
+	{
+		sql = "INSERT INTO NFCLocation "
+				+ "VALUES ("+ID+","+Room+")";
+		try {
+			rs = stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			System.out.println("SQLException: " + e.getMessage());
+		    System.out.println("SQLState: " + e.getSQLState());
+		    System.out.println("VendorError: " + e.getErrorCode());
+		}
+	}
+	
 	
 	/*public static void main(String[]args)
 	{

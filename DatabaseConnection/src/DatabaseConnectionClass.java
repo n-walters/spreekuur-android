@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 
 public class DatabaseConnectionClass {
@@ -134,20 +135,81 @@ public class DatabaseConnectionClass {
 		    System.out.println("VendorError: " + e.getErrorCode());
 		}
 	}
-	
-	
+	public boolean CheckStudent(String StudentName)
+	{
+		//True is added successfully, False is previously added
+		Random rd = new Random();
+		boolean check =false;
+		String name = "";
+		sql = "SELECT Name "
+				+ "FROM student "
+				+ "WHERE Name = '"+StudentName+"'";
+		try {
+			rs = stmt.executeQuery(sql);
+			check = false;
+			
+		} catch (SQLException e) {
+			sql = "INSERT INTO student "
+					+ "VALUES ("+StudentName+","+rd.nextInt(1000000)+")";
+			try {
+				rs = stmt.executeQuery(sql);
+				check = true;
+			} catch (SQLException er) {
+				System.out.println("SQLException: " + er.getMessage());
+			    System.out.println("SQLState: " + er.getSQLState());
+			    System.out.println("VendorError: " + er.getErrorCode());
+			}
+		}
+		return check;
+	}
+	public boolean AddDivToStudent(String DeviceID, int ActiveCode)
+	{
+		boolean check = true;
+		
+		sql = "SELECT ID "
+				+ "FROM student "
+				+ "WHERE ActivationCode ="+ActiveCode;
+		try {
+			rs = stmt.executeQuery(sql);
+			check = true;
+			int id = rs.getInt("ID");
+			sql = "INSERT INTO Device"
+					+ "VALUES ("+id+","+DeviceID+")";
+			try{
+				rs = stmt.executeQuery(sql);
+				sql = "UPDATE Student "
+						+ "SET ActivationCode = 0 "
+						+ "WHERE ID = "+id;
+				try {
+					rs = stmt.executeQuery(sql);
+					check = true;
+				} catch (SQLException er) {
+					check = false;
+					System.out.println("SQLException: " + er.getMessage());
+				    System.out.println("SQLState: " + er.getSQLState());
+				    System.out.println("VendorError: " + er.getErrorCode());
+				}
+				
+			} catch (SQLException e){
+				check = false;
+				System.out.println("SQLException: " + e.getMessage());
+			    System.out.println("SQLState: " + e.getSQLState());
+			    System.out.println("VendorError: " + e.getErrorCode());
+			}
+		} catch (SQLException er) {
+			check = false;
+			System.out.println("SQLException: " + er.getMessage());
+		    System.out.println("SQLState: " + er.getSQLState());
+		    System.out.println("VendorError: " + er.getErrorCode());
+		}
+		
+		return check;
+	}
 	/*public static void main(String[]args)
 	{
 		DatabaseConnectionClass dbc = new DatabaseConnectionClass();
 		
-		ArrayList<String>lecturer = dbc.getLecturers("1513546644");
-		Iterator itr = lecturer.iterator();
-		
-		while(itr.hasNext())
-		{
-			System.out.println(itr.next());
-		}
-		
+		dbc.CheckStudent("Eric George Smith");		
 	}*/
 
 }

@@ -3,7 +3,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -53,25 +56,63 @@ public class DatabaseConnectionClass {
 		}
 		return lecturers;
 	}
-	/*public String nextAvaliableTime(int lecturerID, int length)
+	public String nextAvaliableTime(int lecturerID, int length)
 	{
 		String nextTime = "";
 		long TimeSpecified=0;
 		int Length =0;
-		int followingTime=0;
+		long followingTime=0;
+		long seconds = 0;
+		boolean first = false;
+		Date date = null;
+		Calendar c = Calendar.getInstance();
 		sql = "SELECT TimeSpecified, Length "
 				+ "FROM appointment "
 				+ "WHERE lecturerID = "+lecturerID;
+		
 		try {
 			rs = stmt.executeQuery(sql);
 			while(rs.next())
 			{
-				TimeSpecified = rs.getInt("TimeSpecified");
+				TimeSpecified =rs.getInt("TimeSpecified");
 				Length = rs.getInt("Length");
 			}
-			if((TimeSpecified+Length) ==1315)
+			date = Date.from( Instant.ofEpochSecond( TimeSpecified+Length ) );
+			c.setTime(date);
+			if(c.getTimeInMillis()==0)
 			{
-				followingTime = -1;
+				date = Date.from(Instant.ofEpochSecond(System.currentTimeMillis()/1000));
+				c.setTime(date);
+				first = true;
+			}
+			if(c.get(Calendar.HOUR_OF_DAY)>=13&&(c.get(Calendar.MINUTE)>=15||length>=15))
+			{
+				if(c.get(Calendar.DAY_OF_WEEK)==Calendar.FRIDAY)
+				{
+					c.add(Calendar.DAY_OF_YEAR, 3);
+				}
+				else
+				{
+					c.add(Calendar.DAY_OF_YEAR, 1);
+				}
+				c.set(Calendar.HOUR_OF_DAY,14);
+				c.set(Calendar.MINUTE, 30);
+				seconds = c.getTimeInMillis()/1000;
+				nextTime = seconds+"/"+(seconds+length);
+			}
+			else if(first==false)
+			{
+				followingTime = TimeSpecified+Length;
+				
+				nextTime = followingTime+"/"+(followingTime+length);
+			}
+			else if(first ==true)
+			{
+				c.set(Calendar.HOUR_OF_DAY, 12);
+				c.set(Calendar.MINUTE, 30);
+				seconds = c.getTimeInMillis()/1000;
+				nextTime = seconds+"/"+(seconds+length);
+				System.out.println("Last IF");
 			}
 		} catch (SQLException e) {
 			System.out.println("SQLException: " + e.getMessage());
@@ -79,7 +120,7 @@ public class DatabaseConnectionClass {
 		    System.out.println("VendorError: " + e.getErrorCode());
 		}
 		return nextTime;
-	}*/
+	}
 	
 	public ArrayList<String> getFutureAppointments(String AndroidID)
 	{
@@ -205,11 +246,24 @@ public class DatabaseConnectionClass {
 		
 		return check;
 	}
+	public boolean cancelAppointment(int AppointmentID)
+	{
+		sql = "DELETE FROM Appointment WHERE ID="+AppointmentID;
+		try {
+			rs = stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			System.out.println("SQLException: " + e.getMessage());
+		    System.out.println("SQLState: " + e.getSQLState());
+		    System.out.println("VendorError: " + e.getErrorCode());
+		}
+		return false;
+	}
 	/*public static void main(String[]args)
 	{
 		DatabaseConnectionClass dbc = new DatabaseConnectionClass();
 		
-		dbc.CheckStudent("Eric George Smith");		
+		int seconds = 15*60;
+		System.out.println(dbc.nextAvaliableTime(1, seconds));
 	}*/
 
 }

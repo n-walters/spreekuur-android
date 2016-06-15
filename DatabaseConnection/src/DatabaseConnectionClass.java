@@ -37,11 +37,11 @@ public class DatabaseConnectionClass {
 	public ArrayList<String> getLecturers(String NFCID)
 	{
 		ArrayList<String>lecturers = new ArrayList<String>();
-		sql = "SELECT lecturer.ID,lecturer.Name "
-				+ "FROM lecturer "
-				+ "INNER JOIN nfclocation "
-				+ "ON lecturer.RoomNumber = nfclocation.RoomNumber "
-				+ "WHERE nfclocation.SerialNumber = "+NFCID;
+		sql = "SELECT Lecturer.ID,Lecturer.Name "
+				+ "FROM Lecturer "
+				+ "INNER JOIN NFCLocation "
+				+ "ON Lecturer.RoomNumber = NFCLocation.RoomNumber "
+				+ "WHERE NFCLocation.SerialNumber = "+NFCID;
 		
 		try {
 			rs = stmt.executeQuery(sql);
@@ -67,8 +67,8 @@ public class DatabaseConnectionClass {
 		Date date = null;
 		Calendar c = Calendar.getInstance();
 		sql = "SELECT TimeSpecified, Length "
-				+ "FROM appointment "
-				+ "WHERE lecturerID = "+lecturerID;
+				+ "FROM Appointment "
+				+ "WHERE LecturerID = "+lecturerID;
 		
 		try {
 			rs = stmt.executeQuery(sql);
@@ -122,18 +122,45 @@ public class DatabaseConnectionClass {
 		return nextTime;
 	}
 	
+	public boolean makeAppointment(int LecturerID, String AndroidID, String StartEnd)
+	{
+		boolean check = true;
+		sql = "SELECT ID FROM Device WHERE AndroidID ="+AndroidID;
+		try {
+			rs = stmt.executeQuery(sql);
+			String[] times = StartEnd.split("/");
+			int length = Integer.parseInt(times[1])-Integer.parseInt(times[0]);
+			sql = "INSERT INTO Appointment "
+					+ "VALUES ("+rs.getInt("ID")+","+LecturerID+","+System.currentTimeMillis()/1000+","+times[0]+","+length+")";
+			try {
+				rs = stmt.executeQuery(sql);
+			} catch (SQLException e) {
+				System.out.println("SQLException: " + e.getMessage());
+			    System.out.println("SQLState: " + e.getSQLState());
+			    System.out.println("VendorError: " + e.getErrorCode());
+			    check = false;
+			}
+		} catch (SQLException e) {
+			System.out.println("SQLException: " + e.getMessage());
+		    System.out.println("SQLState: " + e.getSQLState());
+		    System.out.println("VendorError: " + e.getErrorCode());
+		    check = false;
+		}
+		return check;
+	}
+	
 	public ArrayList<String> getFutureAppointments(String AndroidID)
 	{
 		ArrayList<String> futureAppo = new ArrayList<String>();
 		sql = "SELECT `ID`,`LecturerID`,`TimeSpecified`,`Length` "
-				+ "FROM appointment "
+				+ "FROM Appointment "
 				+ "WHERE StudentID IN ("
 				+ "SELECT ID "
-				+ "FROM student "
+				+ "FROM Student "
 				+ "WHERE ID IN ("
 				+ "SELECT StudentID "
-				+ "FROM device"
-				+ "WHERE device.AndroidID = "+AndroidID+"))";
+				+ "FROM Device"
+				+ "WHERE Device.AndroidID = "+AndroidID+"))";
 		try {
 			rs = stmt.executeQuery(sql);
 			while(rs.next())
@@ -146,7 +173,7 @@ public class DatabaseConnectionClass {
 				
 				int appID = rs.getInt("ID");
 				sql = "SELECT `Name` "
-						+ "FROM lecturer "
+						+ "FROM Lecturer "
 						+ "WHERE ID = "+appID;
 				inrs = instmt.executeQuery(sql);
 				
@@ -183,14 +210,14 @@ public class DatabaseConnectionClass {
 		boolean check =false;
 		String name = "";
 		sql = "SELECT Name "
-				+ "FROM student "
+				+ "FROM Student "
 				+ "WHERE Name = '"+StudentName+"'";
 		try {
 			rs = stmt.executeQuery(sql);
 			check = false;
 			
 		} catch (SQLException e) {
-			sql = "INSERT INTO student "
+			sql = "INSERT INTO Student "
 					+ "VALUES ("+StudentName+","+rd.nextInt(1000000)+")";
 			try {
 				rs = stmt.executeQuery(sql);
@@ -208,7 +235,7 @@ public class DatabaseConnectionClass {
 		boolean check = true;
 		
 		sql = "SELECT ID "
-				+ "FROM student "
+				+ "FROM Student "
 				+ "WHERE ActivationCode ="+ActiveCode;
 		try {
 			rs = stmt.executeQuery(sql);
@@ -248,6 +275,7 @@ public class DatabaseConnectionClass {
 	}
 	public boolean cancelAppointment(int AppointmentID)
 	{
+		boolean check = true;
 		sql = "DELETE FROM Appointment WHERE ID="+AppointmentID;
 		try {
 			rs = stmt.executeQuery(sql);
@@ -255,8 +283,9 @@ public class DatabaseConnectionClass {
 			System.out.println("SQLException: " + e.getMessage());
 		    System.out.println("SQLState: " + e.getSQLState());
 		    System.out.println("VendorError: " + e.getErrorCode());
+		    check = false;
 		}
-		return false;
+		return check;
 	}
 	/*public static void main(String[]args)
 	{
